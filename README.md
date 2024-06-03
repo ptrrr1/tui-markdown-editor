@@ -6,14 +6,14 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 
 ## Current progress:
 
-| Feature             |  State  |
-| ------------------- | :-----: |
-| Create Files        |   TBD   |
-| Open/Write Files    | :done:* |
-| Syntax Highlight    |   TBD   |
-| Soft/Hard Wrap      |   TBD   |
-| Dprint Integration  |  TBD**  |
-| Tag/Notebook System | TBD***  |
+| Feature             | State  |
+| ------------------- | :----: |
+| Create Files        |  TBD   |
+| Open/Write Files    | DONE*  |
+| Syntax Highlight    |  TBD   |
+| Soft/Hard Wrap      |  TBD   |
+| Dprint Integration  | TBD**  |
+| Tag/Notebook System | TBD*** |
 
 \* : Will be rewritten + Needs a visual indication that the file has been saved.\
 \*\* : I'm debating if i should integrate, i do like the ability to quickly fix my tables upon saving.\
