@@ -1,4 +1,4 @@
-use std::{io, path::Path};
+use std::{io::{self, Write}, path::Path};
 use ratatui::{prelude::*, widgets::*};
 use tui_textarea::{Input, Key, TextArea};
 use crossterm::{
@@ -32,60 +32,93 @@ enum Message {
     Done
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct File {
-    path: String,
+    path: Option<String>,
     name: String,
+    textarea: TextArea<'static>,
     is_modified: bool
 }
 
 impl File {
-    fn new(path: String) -> File {
+    fn new(path: Option<String>) -> File {
+        // TODO:
         // check if there is a path
         // if yes, return title and path
         // else, open as normal but when saving, open file explorer
-        unimplemented!()
+        
+        // Check if there is a path
+        match path {
+            // If yes, open content and get file name
+            Some(path) => {
+                let mut textarea = TextArea::default();
+                if let Ok(content) = std::fs::read_to_string(&path) {
+                    textarea = TextArea::new(content.lines().map(String::from).collect());
+                }
 
-        // Title -> without .md
-        // Path
-        // Has been modified
+                let name = Path::new(&path)
+                    .file_stem()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or("")
+                    .to_string();
+
+                File {
+                    path: Some(path),
+                    name: name,
+                    textarea: textarea,
+                    is_modified: false,
+                }
+            },
+
+            // Else, create a default instance and set a generic name            
+            None => {
+                File {
+                    path: None,
+                    name: "new_file".to_string(),
+                    textarea: TextArea::default(),
+                    is_modified: false,
+                }
+            },
+        }
     }
 
-    fn get_content() -> String {
-        unimplemented!()
+    fn save(&self) -> io::Result<()> {
+        match &self.path {
+            Some(path) => {
+                let path = std::path::Path::new(&path);
+                let file = std::fs::File::create(&path)?;
+                let mut buf_writer = std::io::BufWriter::new(file);
+
+                for line in self.textarea.lines() {
+                    buf_writer.write_all(line.as_bytes())?;
+                    buf_writer.write_all(b"\n")?; // Adding a newline after each line
+                }
+
+                buf_writer.flush()?;
+                Ok(())
+            },
+            None => {
+                // TODO: Popup window with destination
+                Ok(())
+            },
+        }
     }
 }
 
 #[derive(Debug, Clone)]
 struct Model {
     mode: Mode,
-    filepath: String,
-    textarea: TextArea<'static>,
+    file: File,
     is_focused: bool,
 }
 
 impl Model {
     fn new(path: Option<String>) -> Model {
-        let mut text_area = TextArea::default();
-        let mut filepath = String::new();
-        
-        // Opens the file content
-        
-        match path {
-            Some(path) => {
-                filepath = path.clone();
-                if let Ok(content) = std::fs::read_to_string(&path) {
-                    text_area = TextArea::new(content.lines().map(String::from).collect());
-                }
-            },
-
-            None => {},
-        }
+        let file = File::new(path);
 
         Model {
             mode: Mode::View,
-            filepath: filepath,
-            textarea: text_area,
+            file: file,
             is_focused: true,
         }
     }
@@ -94,7 +127,7 @@ impl Model {
         match msg {
             Message::Edit => { self.mode = Mode::Edit; },
 
-            Message::View => { self.mode = Mode::View; },
+            Message::View => { self.mode = Mode::View; let _ = self.file.save(); },
 
             Message::Done => { self.mode = Mode::Done; },
         }
@@ -102,13 +135,7 @@ impl Model {
 
     // TODO: Rewrite in a more readable manner
     fn view(&mut self, f: &mut Frame) {
-        let filename = Path::new(&self.filepath)
-                .file_name()
-                .and_then(|name| name.to_str())
-                .unwrap_or("")
-                .to_string();
-        
-        let file_name = Line::from(format!("[{}]", filename))
+        let file_name = Line::from(format!("[{}]", self.file.name))
             .alignment(Alignment::Center);
 
         let cur_mode = match self.mode {
@@ -148,15 +175,15 @@ impl Model {
                     .title_bottom(mode)
                     .title_bottom(pos);
 
-        self.textarea.set_block(block);
+        self.file.textarea.set_block(block);
         
-        self.textarea.set_line_number_style(line_number_style);
-        self.textarea.set_selection_style(selection_style);
-        self.textarea.set_style(focused_style);
-        self.textarea.set_cursor_style(cursor_style);
+        self.file.textarea.set_line_number_style(line_number_style);
+        self.file.textarea.set_selection_style(selection_style);
+        self.file.textarea.set_style(focused_style);
+        self.file.textarea.set_cursor_style(cursor_style);
 
         f.render_widget(
-            self.textarea.widget(),
+            self.file.textarea.widget(),
             f.size()
         );
     }
@@ -179,19 +206,12 @@ fn input(input: std::io::Result<Event>, model: &mut Model) {
             match Input::from(i) {
                 // Edit to View
                 Input { key: Key::Esc, .. } => {
-                    /*
-                    if !model.filepath.is_empty() {
-                        let content = model.textarea.lines().join("\n");
-                        fs::write(&model.filepath, content)?;
-                    }
-                    */
-
                     model.update(Message::View);
                 },
 
                 // Read input in Edit Mode
                 input => { 
-                    model.textarea.input(input);
+                    model.file.textarea.input(input);
                 }
             }
         },
@@ -214,46 +234,46 @@ fn input(input: std::io::Result<Event>, model: &mut Model) {
                 // Undo
                 Input { key: Key::Char('z'), ctrl: true, .. } |
                 Input { key: Key::Char('u'), .. } => {
-                    model.textarea.undo();
+                    model.file.textarea.undo();
                 }
 
                 // Redo
                 Input { key: Key::Char('y'), ctrl: true, .. } |
                 Input { key: Key::Char('r'), .. }=> {
-                    model.textarea.redo();
+                    model.file.textarea.redo();
                 }
 
                 // Go to start of ile - Shift + k
                 Input { key: Key::Char('K'), .. } => {
-                    model.textarea.move_cursor(tui_textarea::CursorMove::Top)
+                    model.file.textarea.move_cursor(tui_textarea::CursorMove::Top)
                 },
 
                 // Go to end of file -  Shift + j
                 Input { key: Key::Char('J'), .. }  => {
-                    model.textarea.move_cursor(tui_textarea::CursorMove::Bottom)
+                    model.file.textarea.move_cursor(tui_textarea::CursorMove::Bottom)
                 },
 
                 // Go to next line
                 Input { key: Key::Char('j'), .. }
                 | Input { key: Key::Down, .. }  => {
-                    model.textarea.move_cursor(tui_textarea::CursorMove::Down)
+                    model.file.textarea.move_cursor(tui_textarea::CursorMove::Down)
                 },
 
                 // Go to previous line
                 Input { key: Key::Char('k'), .. } |
                 Input { key: Key::Up, .. }  => {
-                    model.textarea.move_cursor(tui_textarea::CursorMove::Up)
+                    model.file.textarea.move_cursor(tui_textarea::CursorMove::Up)
                 },
 
                 // Scroll Down
                 // Allows scrolling past last line
                 Input { key: Key::MouseScrollDown, .. } => {
-                    model.textarea.scroll((1, 0))
+                    model.file.textarea.scroll((1, 0))
                 }
 
                 // Scroll Up
                 Input { key: Key::MouseScrollUp, .. } => {
-                    model.textarea.scroll((-1, 0));
+                    model.file.textarea.scroll((-1, 0));
                 }
 
                 _ => {}
