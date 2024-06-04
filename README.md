@@ -24,3 +24,20 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 - Crossterm - Backend
 - Ratatui + Tui_textarea - Frontend
 - Comrak - Markdown parser
+
+## Keymap
+
+| Feature                       |      Key      | Alternate |
+| ----------------------------- | :-----------: | :-------: |
+| Exit App*                     |     `Esc`     |    `q`    |
+| Exit Insert Mode              |     `Esc`     |           |
+| Enter Insert Mode             |    `Enter`    |    `i`    |
+| Move Cursor Up*               |      `k`      |           |
+| Move Cursor Down*             |      `j`      |           |
+| Move Cursor to Start of File* |  `Shift + k`  |           |
+| Move Cursor to End of File*   |  `Shift + j`  |           |
+| Scroll*                       | `Mouse Wheel` |           |
+| Undo*                         |  `Ctrl + Z`   |    `u`    |
+| Redo*                         |  `Ctrl + Y`   |    `r`    |
+
+\* : Applicable only in View Mode
