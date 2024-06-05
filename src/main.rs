@@ -7,9 +7,7 @@ use crossterm::{
         DisableMouseCapture, 
         EnableMouseCapture, 
         Event
-    }, 
-    execute, 
-    terminal::{
+    }, execute, terminal::{
         disable_raw_mode, 
         enable_raw_mode,
         EnterAlternateScreen, 
@@ -28,6 +26,7 @@ enum Mode {
 #[derive(Debug)]
 enum Message {
     Edit,
+    Save,
     View,
     Done
 }
@@ -37,7 +36,6 @@ struct File {
     path: Option<String>,
     name: String,
     textarea: TextArea<'static>,
-    is_modified: bool
 }
 
 impl File {
@@ -66,7 +64,6 @@ impl File {
                     path: Some(path),
                     name: name,
                     textarea: textarea,
-                    is_modified: false,
                 }
             },
 
@@ -76,7 +73,6 @@ impl File {
                     path: None,
                     name: "new_file".to_string(),
                     textarea: TextArea::default(),
-                    is_modified: false,
                 }
             },
         }
@@ -103,13 +99,22 @@ impl File {
             },
         }
     }
+
+    #[allow(dead_code)]
+    fn wrap_text(&mut self) {
+        unimplemented!()
+    }
 }
 
 #[derive(Debug, Clone)]
 struct Model {
+    // Essential
     mode: Mode,
     file: File,
+
+    // Feedback
     is_focused: bool,
+    info: Option<String>
 }
 
 impl Model {
@@ -120,21 +125,53 @@ impl Model {
             mode: Mode::View,
             file: file,
             is_focused: true,
+            info: None
         }
     }
 
     fn update(&mut self, msg: Message) {
         match msg {
-            Message::Edit => { self.mode = Mode::Edit; },
+            Message::Edit => { 
+                self.mode = Mode::Edit; 
+                self.info = None; 
+            },
 
-            Message::View => { self.mode = Mode::View; let _ = self.file.save(); },
+            Message::Save => { 
+                self.mode = Mode::View;
+                let _ = self.file.save(); 
+                self.info = Some("File has been saved!".to_string()); 
+            },
 
-            Message::Done => { self.mode = Mode::Done; },
+            Message::View => { 
+                self.mode = Mode::View;
+            },
+
+            Message::Done => { 
+                self.mode = Mode::Done; 
+            },
         }
     }
 
     // TODO: Rewrite in a more readable manner
     fn view(&mut self, f: &mut Frame) {
+        //
+        let info_space = match &self.info {
+            Some(_) => 1,
+            None => 0,
+        };
+
+        let layout = Layout::default()
+                        .direction(Direction::Vertical)
+                        .constraints(
+                            [
+                                Constraint::Fill(1),
+                                Constraint::Length(info_space)
+                            ]
+                        );
+    
+        let chunks = layout.split(f.size());        
+
+        // 
         let file_name = Line::from(format!("[{}]", self.file.name))
             .alignment(Alignment::Center);
 
@@ -147,7 +184,9 @@ impl Model {
         };
 
         let mode = Line::from(cur_mode).alignment(Alignment::Left);
-        let pos = Line::from("[X:Y]").alignment(Alignment::Right);
+
+        let (y, x) = self.file.textarea.cursor();
+        let pos = Line::from(format!("[{}:{}]", y + 1, x)).alignment(Alignment::Right);
 
         let line_number_style = Style::new().add_modifier(Modifier::DIM);
         let selection_style = Style::new().add_modifier(Modifier::REVERSED);
@@ -184,8 +223,21 @@ impl Model {
 
         f.render_widget(
             self.file.textarea.widget(),
-            f.size()
+            chunks[0]
         );
+
+        //
+        if info_space == 1 {
+            let info_block = Block::new()
+                                .borders(Borders::NONE)
+                                .title(format!("{}", self.info.clone().unwrap()))
+                                .title_alignment(Alignment::Center);
+
+            f.render_widget(
+                info_block,
+                chunks[1]
+            );
+        }
     }
 }
 
@@ -209,8 +261,41 @@ fn input(input: std::io::Result<Event>, model: &mut Model) {
                     model.update(Message::View);
                 },
 
+                // Save
+                Input { key: Key::Char('s'), ctrl: true, .. } => {
+                    model.update(Message::Save);
+                },
+
+                // Undo
+                Input { key: Key::Char('z'), ctrl: true, .. } => {
+                    model.file.textarea.undo();
+                }
+
+                // Redo
+                Input { key: Key::Char('y'), ctrl: true, .. } => {
+                    model.file.textarea.redo();
+                }
+
+                // Copy
+                Input { key: Key::Char('c'), ctrl: true, .. } => {
+                    model.file.textarea.copy();
+                }
+
+                // Paste
+                Input { key: Key::Char('v'), ctrl: true, .. } => {
+                    // TODO:
+                    // I'm having trouble with this 
+                    // It does not copy/cut to clipboard and only pastes from clipboard
+                    unimplemented!()
+                }
+
+                // Cut
+                Input { key: Key::Char('x'), ctrl: true, .. } => {
+                    model.file.textarea.cut();
+                }
+
                 // Read input in Edit Mode
-                input => { 
+                input => {
                     model.file.textarea.input(input);
                 }
             }
@@ -231,17 +316,10 @@ fn input(input: std::io::Result<Event>, model: &mut Model) {
                     model.update(Message::Edit); 
                 },
 
-                // Undo
-                Input { key: Key::Char('z'), ctrl: true, .. } |
-                Input { key: Key::Char('u'), .. } => {
-                    model.file.textarea.undo();
-                }
-
-                // Redo
-                Input { key: Key::Char('y'), ctrl: true, .. } |
-                Input { key: Key::Char('r'), .. }=> {
-                    model.file.textarea.redo();
-                }
+                // Save
+                Input { key: Key::Char('s'), ctrl: true, .. } => {
+                    model.update(Message::Save);
+                },
 
                 // Go to start of ile - Shift + k
                 Input { key: Key::Char('K'), .. } => {
@@ -253,16 +331,28 @@ fn input(input: std::io::Result<Event>, model: &mut Model) {
                     model.file.textarea.move_cursor(tui_textarea::CursorMove::Bottom)
                 },
 
-                // Go to next line
+                // Move Cursor Down
                 Input { key: Key::Char('j'), .. }
                 | Input { key: Key::Down, .. }  => {
                     model.file.textarea.move_cursor(tui_textarea::CursorMove::Down)
                 },
 
-                // Go to previous line
+                // Move Cursor Up
                 Input { key: Key::Char('k'), .. } |
                 Input { key: Key::Up, .. }  => {
                     model.file.textarea.move_cursor(tui_textarea::CursorMove::Up)
+                },
+
+                // Move Cursor Left
+                Input { key: Key::Char('h'), .. }
+                | Input { key: Key::Left, .. }  => {
+                    model.file.textarea.move_cursor(tui_textarea::CursorMove::Back)
+                },
+
+                // Move Cursor Right
+                Input { key: Key::Char('l'), .. } |
+                Input { key: Key::Right, .. }  => {
+                    model.file.textarea.move_cursor(tui_textarea::CursorMove::Forward)
                 },
 
                 // Scroll Down

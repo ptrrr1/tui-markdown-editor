@@ -6,18 +6,21 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 
 ## Current progress:
 
-| Feature             | State  |
-| ------------------- | :----: |
-| Create Files        |  TBD   |
-| Open/Write Files    | DONE*  |
-| Syntax Highlight    |  TBD   |
-| Soft/Hard Wrap      |  TBD   |
-| Dprint Integration  | TBD**  |
-| Tag/Notebook System | TBD*** |
+| Feature             |  State  |
+| ------------------- | :-----: |
+| Create Files        |  DONE*  |
+| Open/Write Files    | DONE**  |
+| Syntax Highlight    |   TBD   |
+| Soft/Hard Wrap      |   TBD   |
+| Dprint Integration  | TBD***  |
+| Tag/Notebook System | TBD**** |
 
-\* : Will be rewritten + Needs a visual indication that the file has been saved.\
-\*\* : I'm debating if i should integrate, i do like the ability to quickly fix my tables upon saving.\
-\*\*\* : Still debating wheter i should support it, i do want to have some way to setup a main folder for notes and quickly openning the wanted file without having to navigate all the way to it's place.
+\* : I'm able to create a file if a filename is provided.\
+\*\* : Will be rewritten + Needs a visual indication that the file has been saved.\
+\*\*\* : I'm debating if i should integrate, i do like the ability to quickly fix my tables upon saving.\
+\*\*\*\* : Still debating wheter i should support it, i do want to have some way to setup a main folder for notes and quickly openning the wanted file without having to navigate all the way to it's place.
+
+**NEXT GOAL:** Syntax Highlight
 
 ## Tools:
 
@@ -32,12 +35,15 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 | Exit App*                     |     `Esc`     |    `q`    |
 | Exit Insert Mode              |     `Esc`     |           |
 | Enter Insert Mode             |    `Enter`    |    `i`    |
-| Move Cursor Up*               |      `k`      |           |
-| Move Cursor Down*             |      `j`      |           |
+| Move Cursor Up                |  `Up Arrow`   |   `k`*    |
+| Move Cursor Down              | `Down Arrow`  |   `j`*    |
+| Move Cursor Left              | `Left Arrow`  |   `h`*    |
+| Move Cursor Right             | `Right Arrow` |   `l`*    |
 | Move Cursor to Start of File* |  `Shift + k`  |           |
 | Move Cursor to End of File*   |  `Shift + j`  |           |
 | Scroll*                       | `Mouse Wheel` |           |
-| Undo*                         |  `Ctrl + Z`   |    `u`    |
-| Redo*                         |  `Ctrl + Y`   |    `r`    |
+| Save                          |  `Ctrl + S`   |           |
+| Undo                          |  `Ctrl + Z`   |           |
+| Redo                          |  `Ctrl + Y`   |           |
 
 \* : Applicable only in View Mode
