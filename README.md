@@ -16,7 +16,7 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 | Tag/Notebook System | TBD**** |
 
 \* : I'm able to create a file if a filename is provided.\
-\*\* : Will be rewritten + Needs a visual indication that the file has been saved.\
+\*\* : Will be rewritten. \
 \*\*\* : I'm debating if i should integrate, i do like the ability to quickly fix my tables upon saving.\
 \*\*\*\* : Still debating wheter i should support it, i do want to have some way to setup a main folder for notes and quickly openning the wanted file without having to navigate all the way to it's place.
 
