@@ -1,6 +1,6 @@
 # Markown Editor w/ TUI
 
-This project is going through it's third rewrite. It aims to be a tool that allows me to quickly create and write makrdown files, wherever, whenever.
+This project aims to be a tool that allows me to quickly create and write makrdown files, wherever, whenever.
 I dislike having to navigate to where the file is, i want to press some shortcuts, type the software, folder and file's name in the termninal and be read to edit it.\
 Beyond this, it's also a test of my current capabilities as a developer. My goal is to build all the basic components that would compose a text editor, plus some QOL tools and/or systems.
 
@@ -47,3 +47,6 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 | Redo                          |  `Ctrl + Y`   |           |
 
 \* : Applicable only in View Mode
+
+Rewrite count: 4
+Last rewrite start: 11/JUN/2024
