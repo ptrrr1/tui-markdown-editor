@@ -48,5 +48,5 @@ Beyond this, it's also a test of my current capabilities as a developer. My goal
 
 \* : Applicable only in View Mode
 
-Rewrite count: 4
-Last rewrite start: 11/JUN/2024
+Rewrite count: 4 \
+Last rewrite start: 19/JUN/2024
