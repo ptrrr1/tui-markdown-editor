@@ -17,5 +17,9 @@ pub enum Commands {
 
     /// Configure the path of the folder to write/read files from
     #[command()]
-    Config { path: PathBuf }
+    Config { path: PathBuf },
+
+    /// List folders and/or files [UNIMPLEMENTED]
+    #[command()]
+    List { dir: Option<String>, list_files: bool }
 }
