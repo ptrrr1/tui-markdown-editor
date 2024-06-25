@@ -67,6 +67,7 @@ impl Model {
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
 
+        // App loop
         loop {
             // Render
             terminal.draw(|f| ui::render_frame(&mut self, f))?;

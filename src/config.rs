@@ -9,6 +9,7 @@ use serde::{Serialize, Deserialize};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub folder_path: Option<PathBuf>,
+    // tab_length: i8, default = 4
 }
 
 // Default configuration used when

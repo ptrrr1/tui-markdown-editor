@@ -40,8 +40,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let app = app::Model::new(f);
                 
                 // init
-                app.init();
-
+                let _ = app.init();
             }
         },
     }

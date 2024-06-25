@@ -1,6 +1,11 @@
-use std::path::PathBuf;
-use std::{io::{self}, path::Path};
 use tui_textarea::TextArea;
+use std::{
+    path::{
+        Path, 
+        PathBuf
+    }, 
+    io::Write
+};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -15,7 +20,7 @@ impl File {
 		// Create textarea
 		let mut textarea = TextArea::default();
 
-		// Add content
+		// Add content if any
         if let Ok(content) = std::fs::read_to_string(&path) {
             textarea = TextArea::new(content.lines().map(String::from).collect());
         }
@@ -37,28 +42,17 @@ impl File {
 
 	// TODO: Rework [Was copy pasted from old code]
 	#[allow(dead_code)]
-	pub fn save(&self) -> io::Result<()> {
-		unimplemented!();
-	/*
-        match &self.path {
-            Some(path) => {
-                let path = std::path::Path::new(&path);
-                let file = std::fs::File::create(&path)?;
-                let mut buf_writer = std::io::BufWriter::new(file);
+	pub fn save(&self) -> std::io::Result<()> {
+        let path = std::path::Path::new(&self.path);
+        let file = std::fs::File::create(&path)?;
+        let mut buf_writer = std::io::BufWriter::new(file);
 
-                for line in self.textarea.lines() {
-                    buf_writer.write_all(line.as_bytes())?;
-                    buf_writer.write_all(b"\n")?; // Adding a newline after each line
-                }
-
-                buf_writer.flush()?;
-                Ok(())
-            },
-            None => {
-                // TODO: Popup window with destination
-                Ok(())
-            },
+        for line in self.textarea.lines() {
+            buf_writer.write_all(line.as_bytes())?;
+            buf_writer.write_all(b"\n")?; // Adding a newline after each line
         }
-    */
+
+        buf_writer.flush()?;
+        Ok(())
 	}
 }

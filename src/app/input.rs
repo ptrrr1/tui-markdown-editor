@@ -58,7 +58,7 @@ pub fn read_input(input: std::io::Result<Event>, model: &mut Model) {
 */
                 // Read input in Edit Mode
                 input => {
-                    //model.file.textarea.input(input);
+                    model.file.textarea.input(input);
                 }
             }
         },
@@ -82,7 +82,7 @@ pub fn read_input(input: std::io::Result<Event>, model: &mut Model) {
                 Input { key: Key::Char('s'), ctrl: true, .. } => {
                     model.update(Message::Save);
                 },
-/*
+
                 // Go to start of ile - Shift + k
                 Input { key: Key::Char('K'), .. } => {
                     model.file.textarea.move_cursor(tui_textarea::CursorMove::Top)
@@ -127,7 +127,7 @@ pub fn read_input(input: std::io::Result<Event>, model: &mut Model) {
                 Input { key: Key::MouseScrollUp, .. } => {
                     model.file.textarea.scroll((-1, 0));
                 }
-*/
+
                 _ => {}
             }
         },

@@ -11,6 +11,7 @@ pub fn render_frame(model: &mut Model, f: &mut Frame) {
         None => 0,
     };
 	*/
+    // Define layout parts
     let layout = Layout::default()
                     .direction(Direction::Vertical)
                     .constraints(
